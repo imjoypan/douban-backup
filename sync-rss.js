@@ -273,7 +273,7 @@ async function fetchItem(link, category) {
         }
       })
     }
-
+  }
   return itemData;
 }
 

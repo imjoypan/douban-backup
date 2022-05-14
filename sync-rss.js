@@ -17,20 +17,17 @@ const RATING_TEXT = {
   '推荐': 4,
   '力荐': 5,
 };
-const done = /^(看过|听过|读过|玩过)/;
+const done = /^(看过|读过|玩过)/;
 const CATEGORY = {
   movie: 'movie',
-  music: 'music',
   book: 'book',
   game: 'game',
   drama: 'drama',
 };
 const EMOJI = {
   movie: '🎞',
-  music: '🎶',
   book: '📖',
   game: '🕹',
-  drama: '💃🏻',
 };
 
 const DOUBAN_USER_ID = process.env.DOUBAN_USER_ID;
@@ -38,10 +35,8 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 const movieDBID = process.env.NOTION_MOVIE_DATABASE_ID;
-const musicDBID = process.env.NOTION_MUSIC_DATABASE_ID;
 const bookDBID = process.env.NOTION_BOOK_DATABASE_ID;
 const gameDBID = process.env.NOTION_GAME_DATABASE_ID;
-const dramaDBID = process.env.NOTION_DRAMA_DATABASE_ID;
 
 (async () => {
   console.log('Refreshing feeds from RSS...');
@@ -188,11 +183,6 @@ function getCategoryAndId(title, link) {
       id = link.match(/book\.douban\.com\/subject\/(\d+)\/?/);
       id = id[1]; // string
       break;
-    case '听过':
-      res = CATEGORY.music;
-      id = link.match(/music\.douban\.com\/subject\/(\d+)\/?/);
-      id = id[1]; // string
-      break;
     case '玩过':
       res = CATEGORY.game;
       id = link.match(/www\.douban\.com\/game\/(\d+)\/?/);
@@ -210,17 +200,11 @@ function getDBID(category) {
     case CATEGORY.movie:
       id = movieDBID;
       break;
-    case CATEGORY.music:
-      id = musicDBID;
-      break;
     case CATEGORY.book:
       id = bookDBID;
       break;
     case CATEGORY.game:
       id = gameDBID;
-      break;
-    case CATEGORY.drama:
-      id = dramaDBID;
       break;
     default:
       break;
@@ -245,22 +229,6 @@ async function fetchItem(link, category) {
     const imdbInfo = [...dom.window.document.querySelectorAll('#info span.pl')].filter(i => i.textContent.startsWith('IMDb'));
     if (imdbInfo.length) {
       itemData[DB_PROPERTIES.IMDB_LINK] = 'https://www.imdb.com/title/' + imdbInfo[0].nextSibling.textContent.trim();
-    }
-
-  // music item page
-  } else if (category === CATEGORY.music) {
-    itemData[DB_PROPERTIES.TITLE] = dom.window.document.querySelector('#wrapper h1 span').textContent.trim();
-    itemData[DB_PROPERTIES.POSTER] = dom.window.document.querySelector('#mainpic img')?.src.replace(/\.webp$/, '.jpg');
-    let info = [...dom.window.document.querySelectorAll('#info span.pl')];
-    let release = info.filter(i => i.textContent.trim().startsWith('发行时间'));
-    if (release.length) {
-      let date = release[0].nextSibling.textContent.trim(); // 2021-05-31, or 2021-4-2
-      itemData[DB_PROPERTIES.RELEASE_DATE] = dayjs(date).format('YYYY-MM-DD');
-    }
-    let musician = info.filter(i => i.textContent.trim().startsWith('表演者'));
-    if (musician.length) {
-      itemData[DB_PROPERTIES.MUSICIAN] = musician[0].textContent.replace('表演者:', '').trim().split('\n').map(v => v.trim()).join('');
-      // split and trim to remove extra spaces, rich_text length limited to 2000
     }
 
   // book item page
@@ -305,14 +273,6 @@ async function fetchItem(link, category) {
         }
       })
     }
-
-  // drama item page
-  } else if (category === CATEGORY.drama) {
-    itemData[DB_PROPERTIES.TITLE] = dom.window.document.querySelector('#content .drama-info .meta h1').textContent.trim();
-    let genre = dom.window.document.querySelector('#content .drama-info .meta [itemprop="genre"]').textContent.trim();
-    itemData[DB_PROPERTIES.GENRE] = [genre];
-    itemData[DB_PROPERTIES.POSTER] = dom.window.document.querySelector('.drama-info .pic img')?.src.replace(/\.webp$/, '.jpg');
-  }
 
   return itemData;
 }

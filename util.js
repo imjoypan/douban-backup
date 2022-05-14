@@ -11,9 +11,6 @@ const DB_PROPERTIES = {
   GENRE: '类型', // movie, game, drama
   ITEM_LINK: '条目链接', // common
   IMDB_LINK: 'IMDb 链接',
-  // music
-  RELEASE_DATE: '发行日期', // music and game
-  MUSICIAN: '音乐家',
   // book
   PUBLICATION_DATE: '出版日期',
   PUBLISHING_HOUSE: '出版社',
@@ -24,7 +21,7 @@ const DB_PROPERTIES = {
 const PropertyType = {
   POSTER: 'file',
   TITLE: 'title',
-  RATING: 'multi_select',
+  RATING: 'number',
   RATING_DATE: 'date',
   COMMENTS: 'rich_text',
   YEAR: 'number',
